@@ -1,0 +1,13 @@
+{
+	"authors": [
+		"Michael Hofmann"
+	],
+	"copyright": "Copyright © 2024, Michael Hofmann",
+	"dependencies": {
+		"gamut": "~>2.6.1"
+	},
+	"description": "Ray Tracing in One Weekend",
+	"license": "zlib",
+	"name": "rtiow",
+	"targetPath": "bin"
+}
