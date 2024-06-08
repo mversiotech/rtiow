@@ -1,5 +1,3 @@
-import std.stdio;
-
 import camera;
 import color;
 import hittable;

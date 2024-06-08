@@ -7,6 +7,15 @@ import interval;
 import ray;
 import vec3;
 
+enum samplesPerPixel = 10;
+
+private struct ImageGeometry
+{
+    Point3f firstPixelLoc;
+    Vec3f pixelDeltaU;
+    Vec3f pixelDeltaV;
+}
+
 class Camera
 {
     private Point3f center;
@@ -18,28 +27,30 @@ class Camera
 
     void render(ColorBuffer target, const Hittable scene) const
     {
-        Point3f firstPixelLoc;
-        Vec3f pixelDeltaU;
-        Vec3f pixelDeltaV;
+        ImageGeometry igeom;
+        setupImageGeometry(target, igeom);
 
-        setupGeometry(target, firstPixelLoc, pixelDeltaU, pixelDeltaV);
+        const float colorScale = 1.0f / samplesPerPixel;
 
         for (int y = 0; y < target.h; y++)
         {
             for (int x = 0; x < target.w; x++)
             {
-                const pixelCenter = firstPixelLoc + (x * pixelDeltaU) + (y * pixelDeltaV);
-                const rayDir = pixelCenter - center;
-                const ray = new Ray(center, rayDir);
+                auto pixelColor = Color(0, 0, 0);
 
-                const pixelColor = rayColor(ray, scene);
+                for (int i = 0; i < samplesPerPixel; i++)
+                {
+                    const ray = getRay(igeom, x, y);
+                    pixelColor += rayColor(ray, scene);
+                }
+
+                pixelColor *= colorScale;
                 target.setPixel(x, y, pixelColor);
             }
         }
     }
 
-    private void setupGeometry(const ColorBuffer target, out Point3f firstPixelLoc,
-            out Vec3f pixelDeltaU, out Vec3f pixelDeltaV) const
+    private void setupImageGeometry(const ColorBuffer target, out ImageGeometry igeom) const
     {
         // Camera parameters
         const aspectRatio = cast(float) target.w / cast(float) target.h;
@@ -51,8 +62,8 @@ class Camera
         const viewportV = Vec3f(0, -viewportHeight, 0);
 
         // horizontal and vertical delta vectors from pixel to pixel
-        pixelDeltaU = viewportU / target.w;
-        pixelDeltaV = viewportV / target.h;
+        igeom.pixelDeltaU = viewportU / target.w;
+        igeom.pixelDeltaV = viewportV / target.h;
 
         const focalLength = 1.0f;
 
@@ -60,7 +71,25 @@ class Camera
         const viewportUpperLeft = center - Vec3f(0, 0,
                 focalLength) - viewportU * 0.5f - viewportV * 0.5f;
 
-        firstPixelLoc = viewportUpperLeft + 0.5f * (pixelDeltaU + pixelDeltaV);
+        igeom.firstPixelLoc = viewportUpperLeft + 0.5f * (igeom.pixelDeltaU + igeom.pixelDeltaV);
+    }
+
+    /// Constructs a camera ray originating from the origin and directed at
+    /// a randomly sampled point araund the pixel location (x, y).
+    private Ray getRay(ref const(ImageGeometry) igeom, int x, int y) const
+    {
+        import std.random : uniform;
+
+        float offsetX = uniform(-0.5f, 0.5f);
+        float offsetY = uniform(-0.5f, 0.5f);
+
+        // dfmt off
+        Vec3f pixelSample = igeom.firstPixelLoc
+            + ((x + offsetX) * igeom.pixelDeltaU)
+            + ((y + offsetY) * igeom.pixelDeltaV);
+        // dfmt on
+
+        return new Ray(center, pixelSample - center);
     }
 
     private Color rayColor(const Ray ray, const Hittable scene) const

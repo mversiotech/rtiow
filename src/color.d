@@ -2,6 +2,8 @@
 module color;
 
 import gamut;
+
+import interval;
 import vec3;
 
 alias Color = Vec3!float;
@@ -25,14 +27,14 @@ class ColorBuffer
 
     @safe void setPixel(int x, int y, Color c)
     {
-        import std.math : floor;
-
         assert(x >= 0 && y >= 0 && x < w && y < h);
 
+        const intensity = Interval(0, 0.999f);
+
         auto pixel = data[3 * (y * w + x) .. $];
-        pixel[0] = cast(ubyte) floor(255.0f * c.x);
-        pixel[1] = cast(ubyte) floor(255.0f * c.y);
-        pixel[2] = cast(ubyte) floor(255.0f * c.z);
+        pixel[0] = cast(ubyte) (256.0f * intensity.clamp(c.x));
+        pixel[1] = cast(ubyte) (256.0f * intensity.clamp(c.y));
+        pixel[2] = cast(ubyte) (256.0f * intensity.clamp(c.z));
     }
 
     void savePNG(string filename)
