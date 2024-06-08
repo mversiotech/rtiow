@@ -1,6 +1,7 @@
 module hittable;
 @safe nothrow:
 
+import interval;
 import ray;
 import vec3;
 
@@ -20,7 +21,7 @@ struct HitRecord
 
 interface Hittable
 {
-    bool hit(const Ray ray, float rayTmin, float rayTmax, out HitRecord rec) const;
+    bool hit(const Ray ray, Interval rayT, out HitRecord rec) const;
 }
 
 class HittableList : Hittable
@@ -37,15 +38,15 @@ class HittableList : Hittable
         objects.length = 0;
     }
 
-    bool hit(const Ray ray, float rayTmin, float rayTmax, out HitRecord rec) const
+    bool hit(const Ray ray, Interval rayT, out HitRecord rec) const
     {
         HitRecord tmpRec;
         bool haveHit;
-        float closestT = rayTmax;
+        float closestT = rayT.max;
 
         foreach (obj; objects)
         {
-            if (obj.hit(ray, rayTmin, closestT, tmpRec))
+            if (obj.hit(ray, Interval(rayT.min, closestT), tmpRec))
             {
                 haveHit = true;
                 closestT = tmpRec.t;

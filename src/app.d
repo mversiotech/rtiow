@@ -2,6 +2,7 @@ import std.stdio;
 
 import color;
 import hittable;
+import interval;
 import ray;
 import sphere;
 import vec3;
@@ -62,7 +63,7 @@ Color rayColor(const Ray ray, const Hittable scene)
 {
     HitRecord rec;
 
-    if (scene.hit(ray, 0, float.infinity, rec))
+    if (scene.hit(ray, Interval(0, float.infinity), rec))
     {
         Vec3f n = rec.normal;
         return 0.5f * Color(n.x + 1, n.y + 1, n.z + 1);

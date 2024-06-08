@@ -2,6 +2,7 @@ module sphere;
 @safe nothrow:
 
 import hittable;
+import interval;
 import ray;
 import vec3;
 
@@ -17,7 +18,7 @@ class Sphere : Hittable
         this.radius = radius;
     }
 
-    bool hit(const Ray ray, float rayTmin, float rayTmax, out HitRecord rec) const
+    bool hit(const Ray ray, Interval rayT, out HitRecord rec) const
     {
         import std.math : sqrt;
 
@@ -33,10 +34,10 @@ class Sphere : Hittable
         float sqrtd = sqrt(discriminant);
 
         float root = (h - sqrtd) / a;
-        if (root <= rayTmin || root >= rayTmax)
+        if (root <= rayT.min || root >= rayT.max)
         {
             root = (h + sqrtd) / a;
-            if (root <= rayTmin || root >= rayTmax)
+            if (root <= rayT.min || root >= rayT.max)
                 return false;
         }
 
