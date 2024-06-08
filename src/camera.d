@@ -78,10 +78,10 @@ class Camera
     /// a randomly sampled point araund the pixel location (x, y).
     private Ray getRay(ref const(ImageGeometry) igeom, int x, int y) const
     {
-        import std.random : uniform;
+        import std.random : uniform01;
 
-        float offsetX = uniform(-0.5f, 0.5f);
-        float offsetY = uniform(-0.5f, 0.5f);
+        float offsetX = uniform01() - 0.5f;
+        float offsetY = uniform01() - 0.5f;
 
         // dfmt off
         Vec3f pixelSample = igeom.firstPixelLoc

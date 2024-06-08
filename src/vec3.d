@@ -51,6 +51,35 @@ struct Vec3(T) if (isNumeric!T)
         return x * x + y * y + z * z;
     }
 
+    /// random returns a new vector with random components
+    static Vec3!T random()
+    {
+        static if (isFloatingPoint!T)
+        {
+            import std.random : uniform01;
+
+            return Vec3!T(uniform01(), uniform01(), uniform01());
+        }
+        else
+        {
+            import std.random : uniform;
+
+            return Vec3!T(uniform!T(), uniform!T(), uniform!T());
+        }
+    }
+
+    /// random returns a new vector with random components within the given range
+    static Vec3!T random(T min, T max)
+    {
+        import std.random : uniform;
+
+        const x = uniform(min, max);
+        const y = uniform(min, max);
+        const z = uniform(min, max);
+
+        return Vec3f(x, y, z);
+    }
+
     // methods only defined for floating point vectors
     static if (isFloatingPoint!T)
     {
