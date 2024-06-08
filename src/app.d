@@ -1,7 +1,9 @@
 import std.stdio;
 
 import color;
+import hittable;
 import ray;
+import sphere;
 import vec3;
 
 enum
@@ -52,31 +54,16 @@ void main()
 
 Color rayColor(const Ray ray)
 {
-    const sphereCenter = Point3f(0, 0, -1);
-    const t = hitSphere(sphereCenter, 0.5f, ray);
-    if (t > 0)
+    const sphere = new Sphere(Point3f(0, 0, -1), 0.5f);
+    HitRecord rec;
+
+    if (sphere.hit(ray, 0, 100, rec))
     {
-        Vec3f n = (ray.at(t) - sphereCenter).unit();
+        Vec3f n = rec.normal;
         return 0.5f * Color(n.x + 1, n.y + 1, n.z + 1);
     }
 
     const unitDir = ray.direction.unit();
     const a = 0.5f * (unitDir.y + 1.0f);
     return (1.0f - a) * Color(1.0f, 1.0f, 1.0f) + a * Color(0.5f, 0.7f, 1.0f);
-}
-
-float hitSphere(Point3f center, float radius, const Ray ray)
-{
-    import std.math : sqrt;
-
-    Vec3f oc = center - ray.origin;
-    float a = ray.direction.lengthSquared();
-    float h = ray.direction.dot(oc);
-    float c = oc.lengthSquared() - radius * radius;
-    float discriminant = h * h - a * c;
-
-    if (discriminant < 0)
-        return -1.0f;
-
-    return (h - sqrt(discriminant)) / a;
 }
