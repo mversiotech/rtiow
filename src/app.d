@@ -34,7 +34,13 @@ void main()
             focalLength) - viewportU * 0.5f - viewportV * 0.5f;
     const firstPixelLoc = viewportUpperLeft + 0.5f * (pixelDeltaU + pixelDeltaV);
 
+    // output color buffer
     auto buffer = new ColorBuffer(imageWidth, imageHeight);
+
+    // scene
+    auto scene = new HittableList();
+    scene.add(new Sphere(Point3f(0, 0, -1), 0.5));
+    scene.add(new Sphere(Point3f(0, -100.5, -1), 100));
 
     for (int y = 0; y < imageHeight; y++)
     {
@@ -44,7 +50,7 @@ void main()
             const rayDir = pixelCenter - cameraCenter;
             const ray = new Ray(cameraCenter, rayDir);
 
-            const pixelColor = rayColor(ray);
+            const pixelColor = rayColor(ray, scene);
             buffer.setPixel(x, y, pixelColor);
         }
     }
@@ -52,12 +58,11 @@ void main()
     buffer.savePNG("output.png");
 }
 
-Color rayColor(const Ray ray)
+Color rayColor(const Ray ray, const Hittable scene)
 {
-    const sphere = new Sphere(Point3f(0, 0, -1), 0.5f);
     HitRecord rec;
 
-    if (sphere.hit(ray, 0, 100, rec))
+    if (scene.hit(ray, 0, float.infinity, rec))
     {
         Vec3f n = rec.normal;
         return 0.5f * Color(n.x + 1, n.y + 1, n.z + 1);
