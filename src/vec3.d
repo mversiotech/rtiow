@@ -11,9 +11,6 @@ alias Vec3f = Vec3!float;
 /// Point3f is an alias for Vec3f used to indicate location vectors.
 alias Point3f = Vec3!float;
 
-/// Vec3i is a vector with 3 int components.
-alias Vec3i = Vec3!int;
-
 /// Vec3 is a vector with two components of an arbitrary numerical type.
 struct Vec3(T) if (isNumeric!T)
 {
@@ -57,8 +54,7 @@ struct Vec3(T) if (isNumeric!T)
     // methods only defined for floating point vectors
     static if (isFloatingPoint!T)
     {
-        /// For vectors with floating-point components, isClose returns true
-        /// if this vector and rhs are approximately equal.
+        /// isClose returns true if this vector and rhs are approximately equal.
         ///
         /// This method is not implemented for vectors with integral components.
         bool isClose(Vec3!T rhs) const

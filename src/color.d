@@ -30,9 +30,9 @@ class ColorBuffer
         assert(x >= 0 && y >= 0 && x < w && y < h);
 
         auto pixel = data[3 * (y * w + x) .. $];
-        pixel[0] = cast(ubyte) floor(256.0f * c.x);
-        pixel[1] = cast(ubyte) floor(256.0f * c.y);
-        pixel[2] = cast(ubyte) floor(256.0f * c.z);
+        pixel[0] = cast(ubyte) floor(255.0f * c.x);
+        pixel[1] = cast(ubyte) floor(255.0f * c.y);
+        pixel[2] = cast(ubyte) floor(255.0f * c.z);
     }
 
     void savePNG(string filename)
