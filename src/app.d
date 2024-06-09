@@ -13,6 +13,8 @@ enum
 
 void main()
 {
+    import std.math : PI_2;
+
     auto scene = new HittableList();
 
     const groundMaterial = new Lambertian(Color(0.8f, 0.8f, 0.0f));
@@ -27,10 +29,15 @@ void main()
     scene.add(new Sphere(Point3f(-1.0f, 0.0f, -1.0f), 0.4f, bubbleMaterial));
     scene.add(new Sphere(Point3f(1.0f, 0.0f, -1.0f), 0.5f, rightMaterial));
 
-    const camera = new Camera(Point3f(0, 0, 0));
+    const camPos = Point3f(-2, 2, 1);
+    const camLookAt = Point3f(0, 0, -1);
+    const camUp = Vec3f(0, 1, 0);
+    const camVFov = PI_2;
+
+    const camera = new Camera(camPos, camLookAt, camUp, camVFov);
 
     auto target = new ColorBuffer(imageWidth, imageHeight);
 
     camera.render(target, scene);
-    target.savePNG("renderings/hollow.png");
+    target.savePNG("renderings/distant.png");
 }

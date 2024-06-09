@@ -24,11 +24,25 @@ private struct ImageGeometry
 
 class Camera
 {
-    private Point3f center;
+    private Point3f position;
+    private Vec3f right;
+    private Vec3f up;
+    private Vec3f back;
+    private float vfov;
+    private float focalLength;
 
-    this(Point3f center)
+    this(Point3f position, Point3f lookAt, Vec3f up, float vfov)
     {
-        this.center = center;
+        this.position = position;
+        this.vfov = vfov;
+
+        const dir = position - lookAt;
+        focalLength = dir.length();
+        assert(focalLength > 0);
+
+        back = dir / focalLength;
+        right = up.cross(back).unit();
+        this.up = back.cross(right);
     }
 
     void render(ColorBuffer target, const Hittable scene) const
@@ -58,24 +72,28 @@ class Camera
 
     private void setupImageGeometry(const ColorBuffer target, out ImageGeometry igeom) const
     {
+        import std.math : tan;
+
         // Camera parameters
         const aspectRatio = cast(float) target.w / cast(float) target.h;
-        const viewportHeight = 2.0f;
+        const viewportHeight = 2.0f * tan(vfov * 0.5f) * focalLength;
         const viewportWidth = viewportHeight * aspectRatio;
 
         // vectors across the horizontal and vertical viewport edges
-        const viewportU = Vec3f(viewportWidth, 0, 0);
-        const viewportV = Vec3f(0, -viewportHeight, 0);
+        const viewportU = viewportWidth * right;
+        const viewportV = -viewportHeight * up;
 
         // horizontal and vertical delta vectors from pixel to pixel
         igeom.pixelDeltaU = viewportU / target.w;
         igeom.pixelDeltaV = viewportV / target.h;
 
-        const focalLength = 1.0f;
-
         // location of the upper left pixel
-        const viewportUpperLeft = center - Vec3f(0, 0,
-                focalLength) - viewportU * 0.5f - viewportV * 0.5f;
+        // dfmt off
+        const viewportUpperLeft = position
+            - focalLength * back
+            - viewportU * 0.5f
+            - viewportV * 0.5f;
+        // dfmt on
 
         igeom.firstPixelLoc = viewportUpperLeft + 0.5f * (igeom.pixelDeltaU + igeom.pixelDeltaV);
     }
@@ -95,7 +113,7 @@ class Camera
             + ((y + offsetY) * igeom.pixelDeltaV);
         // dfmt on
 
-        return new Ray(center, pixelSample - center);
+        return new Ray(position, pixelSample - position);
     }
 
     private Color rayColor(const Ray ray, const Hittable scene, int depth) const
