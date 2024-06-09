@@ -2,6 +2,7 @@ import camera;
 import color;
 import hittable;
 import material;
+import random;
 import sphere;
 import vec3;
 
@@ -13,33 +14,61 @@ enum
 
 void main()
 {
+    import std.random : uniform01;
+
     auto scene = new HittableList();
 
-    const groundMaterial = new Lambertian(Color(0.8f, 0.8f, 0.0f));
-    const centerMaterial = new Lambertian(Color(0.1f, 0.2f, 0.5f));
-    const leftMaterial = new Dielectric(1.5f);
-    const bubbleMaterial = new Dielectric(1.0f / 1.5f);
-    const rightMaterial = new Metal(Color(0.8f, 0.6f, 0.2f), 1.0f);
+    const groundMaterial = new Lambertian(Color(0.5f, 0.5f, 0.5f));
+    scene.add(new Sphere(Point3f(0.0f, -1000.0f, 0.0f), 1000.0f, groundMaterial));
 
-    scene.add(new Sphere(Point3f(0.0f, -100.5f, -1.0f), 100.0f, groundMaterial));
-    scene.add(new Sphere(Point3f(0.0f, 0.0f, -1.2f), 0.5f, centerMaterial));
-    scene.add(new Sphere(Point3f(-1.0f, 0.0f, -1.0f), 0.5f, leftMaterial));
-    scene.add(new Sphere(Point3f(-1.0f, 0.0f, -1.0f), 0.4f, bubbleMaterial));
-    scene.add(new Sphere(Point3f(1.0f, 0.0f, -1.0f), 0.5f, rightMaterial));
+    for (int i = -11; i < 11; i++)
+    {
+        for (int j = -11; j < 11; j++)
+        {
+            float chooseMat = uniform01();
+            const center = Point3f(i + 0.9f * uniform01(), 0.2f, j + 0.9f * uniform01());
 
-    const camPos = Point3f(-2, 2, 1);
-    const camLookAt = Point3f(0, 0, -1);
+            if ((center - Point3f(4.0f, 0.2f, 0.0f)).length() < 0.9f)
+                continue;
+
+            if (chooseMat < 0.8f)
+            {
+                // diffuse material
+                const albedo = randomVec3f(0, 1).componentMul(randomVec3f(0, 1));
+                scene.add(new Sphere(center, 0.2, new Lambertian(albedo)));
+            }
+            else if (chooseMat < 0.95f)
+            {
+                // metal material
+                const albedo = randomVec3f(0.5f, 1.0f);
+                auto fuzz = uniform01() * 0.5f;
+                scene.add(new Sphere(center, 0.2f, new Metal(albedo, fuzz)));
+            }
+            else
+            {
+                // glass material
+                scene.add(new Sphere(center, 0.2f, new Dielectric(1.5f)));
+            }
+        }
+    }
+
+    scene.add(new Sphere(Point3f(0, 1, 0), 1.0f, new Dielectric(1.5f)));
+    scene.add(new Sphere(Point3f(-4, 1, 0), 1.0f, new Lambertian(Color(0.4f, 0.2f, 0.1f))));
+    scene.add(new Sphere(Point3f(4, 1, 0), 1.0f, new Metal(Color(0.7f, 0.6f, 0.5f), 0)));
+
+    const camPos = Point3f(13, 2, 3);
+    const camLookAt = Point3f(0, 0, 0);
     const camUp = Vec3f(0, 1, 0);
     const camVFov = degreesToRadians(20.0f);
-    const camDefocusAngle = degreesToRadians(10.0f);
-    const camFocusDist = 3.4f;
+    const camDefocusAngle = degreesToRadians(0.6f);
+    const camFocusDist = 10.0f;
 
     const camera = new Camera(camPos, camLookAt, camUp, camVFov, camDefocusAngle, camFocusDist);
 
     auto target = new ColorBuffer(imageWidth, imageHeight);
 
     camera.render(target, scene);
-    target.savePNG("renderings/defocus.png");
+    target.savePNG("renderings/final.png");
 }
 
 private float degreesToRadians(float x)
