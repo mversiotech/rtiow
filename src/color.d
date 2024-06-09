@@ -29,12 +29,16 @@ class ColorBuffer
     {
         assert(x >= 0 && y >= 0 && x < w && y < h);
 
+        const r = linearToGamma(c.x);
+        const g = linearToGamma(c.y);
+        const b = linearToGamma(c.z);
+
         const intensity = Interval(0, 0.999f);
 
         auto pixel = data[3 * (y * w + x) .. $];
-        pixel[0] = cast(ubyte) (256.0f * intensity.clamp(c.x));
-        pixel[1] = cast(ubyte) (256.0f * intensity.clamp(c.y));
-        pixel[2] = cast(ubyte) (256.0f * intensity.clamp(c.z));
+        pixel[0] = cast(ubyte) (256.0f * intensity.clamp(r));
+        pixel[1] = cast(ubyte) (256.0f * intensity.clamp(g));
+        pixel[2] = cast(ubyte) (256.0f * intensity.clamp(b));
     }
 
     void savePNG(string filename)
@@ -44,5 +48,15 @@ class ColorBuffer
 
         if (!img.saveToFile(ImageFormat.PNG, filename))
             throw new Exception("cannot save PNG: " ~ img.errorMessage().idup());
+    }
+
+    private @safe float linearToGamma(float linear)
+    {
+        import std.math: sqrt;
+
+        if (linear > 0)
+            return sqrt(linear);
+
+        return 0.0f;
     }
 }
