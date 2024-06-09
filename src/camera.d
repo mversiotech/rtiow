@@ -8,7 +8,12 @@ import random;
 import ray;
 import vec3;
 
-enum samplesPerPixel = 10;
+// Some render parameters
+enum
+{
+    samplesPerPixel = 10,
+    maxRecursionDepth = 10
+}
 
 private struct ImageGeometry
 {
@@ -42,7 +47,7 @@ class Camera
                 for (int i = 0; i < samplesPerPixel; i++)
                 {
                     const ray = getRay(igeom, x, y);
-                    pixelColor += rayColor(ray, scene);
+                    pixelColor += rayColor(ray, scene, 0);
                 }
 
                 pixelColor *= colorScale;
@@ -93,14 +98,17 @@ class Camera
         return new Ray(center, pixelSample - center);
     }
 
-    private Color rayColor(const Ray ray, const Hittable scene) const
+    private Color rayColor(const Ray ray, const Hittable scene, int depth) const
     {
+        if (depth >= maxRecursionDepth)
+            return Color(0, 0, 0);
+
         HitRecord rec;
 
         if (scene.hit(ray, Interval(0, float.infinity), rec))
         {
             const direction = randomVec3fOnHemisphere(rec.normal);
-            return 0.5f * rayColor(new Ray(rec.p, direction), scene);
+            return 0.5f * rayColor(new Ray(rec.p, direction), scene, depth + 1);
         }
 
         const unitDir = ray.direction.unit();
