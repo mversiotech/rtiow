@@ -2,6 +2,7 @@ module hittable;
 @safe nothrow:
 
 import interval;
+import material;
 import ray;
 import vec3;
 
@@ -9,13 +10,15 @@ class HitRecord
 {
     const Point3f p;
     const Vec3f normal;
+    const Material mat;
     const float t;
     const bool isFront;
 
-    this(const Ray ray, Point3f p, Vec3f outNormal, float t)
+    this(const Ray ray, Point3f p, Vec3f outNormal, float t, const Material mat)
     {
         this.p = p;
         this.t = t;
+        this.mat = mat;
         isFront = ray.direction.dot(outNormal) < 0;
         normal = isFront ? outNormal : -outNormal;
     }

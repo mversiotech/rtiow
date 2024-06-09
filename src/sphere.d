@@ -3,19 +3,22 @@ module sphere;
 
 import hittable;
 import interval;
+import material;
 import ray;
 import vec3;
 
 class Sphere : Hittable
 {
+    const Material mat;
     const Point3f center;
     const float radius;
 
-    this(Point3f center, float radius)
+    this(Point3f center, float radius, const Material mat)
     {
         assert(radius > 0);
         this.center = center;
         this.radius = radius;
+        this.mat = mat;
     }
 
     HitRecord hit(const Ray ray, Interval rayT) const
@@ -43,8 +46,7 @@ class Sphere : Hittable
 
         Vec3f p = ray.at(root);
         Vec3f outNormal = (p - center) / radius;
-        auto rec = new HitRecord(ray, p, outNormal, root);
 
-        return rec;
+        return new HitRecord(ray, p, outNormal, root, mat);
     }
 }

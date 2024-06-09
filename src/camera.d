@@ -106,8 +106,12 @@ class Camera
         HitRecord rec = scene.hit(ray, Interval(0.001f, float.infinity));
         if (rec !is null)
         {
-            const direction = rec.normal + randomUnitVec3f();
-            return 0.5f * rayColor(new Ray(rec.p, direction), scene, depth + 1);
+            Color attenuation;
+            Ray scattered = rec.mat.scatter(ray, rec, attenuation);
+            if (scattered !is null)
+                return attenuation.componentMul(rayColor(scattered, scene, depth + 1));
+
+            return Color(0, 0, 0);
         }
 
         const unitDir = ray.direction.unit();

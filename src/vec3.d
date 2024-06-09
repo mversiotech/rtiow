@@ -30,6 +30,13 @@ struct Vec3(T) if (isNumeric!T)
         return c;
     }
 
+    /// componentMul returns the result of component-wise multiplication of this
+    /// vector and rhs.
+    Vec3!T componentMul(Vec3!T rhs) const
+    {
+        return Vec3!T(x * rhs.x, y * rhs.y, z * rhs.z);
+    }
+
     /// dot returns the dot product between this vector and rhs.
     T dot(Vec3!T rhs) const
     {
