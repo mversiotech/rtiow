@@ -28,21 +28,30 @@ class Camera
     private Vec3f right;
     private Vec3f up;
     private Vec3f back;
+    private Vec3f defocusDiskU;
+    private Vec3f defocusDiskV;
     private float vfov;
-    private float focalLength;
+    private float focusDist;
+    private float defocusAngle;
 
-    this(Point3f position, Point3f lookAt, Vec3f up, float vfov)
+    this(Point3f position, Point3f lookAt, Vec3f up, float vfov, float defocusAngle, float focusDist)
     {
+        import std.math : tan;
+
+        assert(focusDist > 0);
+
         this.position = position;
         this.vfov = vfov;
+        this.focusDist = focusDist;
+        this.defocusAngle = defocusAngle;
 
-        const dir = position - lookAt;
-        focalLength = dir.length();
-        assert(focalLength > 0);
-
-        back = dir / focalLength;
+        back = (position - lookAt).unit();
         right = up.cross(back).unit();
         this.up = back.cross(right);
+
+        float defocusRadius = focusDist * tan(defocusAngle * 0.5f);
+        defocusDiskU = right * defocusRadius;
+        defocusDiskV = up * defocusRadius;
     }
 
     void render(ColorBuffer target, const Hittable scene) const
@@ -76,7 +85,7 @@ class Camera
 
         // Camera parameters
         const aspectRatio = cast(float) target.w / cast(float) target.h;
-        const viewportHeight = 2.0f * tan(vfov * 0.5f) * focalLength;
+        const viewportHeight = 2.0f * tan(vfov * 0.5f) * focusDist;
         const viewportWidth = viewportHeight * aspectRatio;
 
         // vectors across the horizontal and vertical viewport edges
@@ -90,7 +99,7 @@ class Camera
         // location of the upper left pixel
         // dfmt off
         const viewportUpperLeft = position
-            - focalLength * back
+            - focusDist * back
             - viewportU * 0.5f
             - viewportV * 0.5f;
         // dfmt on
@@ -113,7 +122,10 @@ class Camera
             + ((y + offsetY) * igeom.pixelDeltaV);
         // dfmt on
 
-        return new Ray(position, pixelSample - position);
+        Point3f origin = (defocusAngle <= 0) ? position : defocusDiskSample();
+        Vec3f direction = pixelSample - origin;
+
+        return new Ray(origin, direction);
     }
 
     private Color rayColor(const Ray ray, const Hittable scene, int depth) const
@@ -135,5 +147,11 @@ class Camera
         const unitDir = ray.direction.unit();
         const a = 0.5f * (unitDir.y + 1.0f);
         return (1.0f - a) * Color(1.0f, 1.0f, 1.0f) + a * Color(0.5f, 0.7f, 1.0f);
+    }
+
+    private Point3f defocusDiskSample() const
+    {
+        Point3f p = randomUnitDiskVec3f();
+        return position + (p.x * defocusDiskU) + (p.y * defocusDiskV);
     }
 }

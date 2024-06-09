@@ -39,3 +39,19 @@ Vec3f randomVec3fOnHemisphere(Vec3f normal)
     else
         return -v;
 }
+
+/// randomUnitDiskVec3f returns a Vec3f with random x and y components,
+/// a z component of 0 and a length of 1.
+Vec3f randomUnitDiskVec3f()
+{
+    import std.random : uniform;
+
+    while (true)
+    {
+        const x = uniform(-1.0f, 1.0f);
+        const y = uniform(-1.0f, 1.0f);
+
+        if (x * x + y * y < 1.0f)
+            return Vec3f(x, y, 0.0f);
+    }
+}
