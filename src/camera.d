@@ -4,6 +4,7 @@ module camera;
 import color;
 import hittable;
 import interval;
+import random;
 import ray;
 import vec3;
 
@@ -98,8 +99,8 @@ class Camera
 
         if (scene.hit(ray, Interval(0, float.infinity), rec))
         {
-            Vec3f n = rec.normal;
-            return 0.5f * Color(n.x + 1, n.y + 1, n.z + 1);
+            const direction = randomVec3fOnHemisphere(rec.normal);
+            return 0.5f * rayColor(new Ray(rec.p, direction), scene);
         }
 
         const unitDir = ray.direction.unit();
