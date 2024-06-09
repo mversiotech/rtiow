@@ -103,9 +103,8 @@ class Camera
         if (depth >= maxRecursionDepth)
             return Color(0, 0, 0);
 
-        HitRecord rec;
-
-        if (scene.hit(ray, Interval(0.001f, float.infinity), rec))
+        HitRecord rec = scene.hit(ray, Interval(0.001f, float.infinity));
+        if (rec !is null)
         {
             const direction = rec.normal + randomUnitVec3f();
             return 0.5f * rayColor(new Ray(rec.p, direction), scene, depth + 1);

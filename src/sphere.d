@@ -18,7 +18,7 @@ class Sphere : Hittable
         this.radius = radius;
     }
 
-    bool hit(const Ray ray, Interval rayT, out HitRecord rec) const
+    HitRecord hit(const Ray ray, Interval rayT) const
     {
         import std.math : sqrt;
 
@@ -29,7 +29,7 @@ class Sphere : Hittable
         float discriminant = h * h - a * c;
 
         if (discriminant < 0)
-            return false;
+            return null;
 
         float sqrtd = sqrt(discriminant);
 
@@ -38,14 +38,13 @@ class Sphere : Hittable
         {
             root = (h + sqrtd) / a;
             if (root <= rayT.min || root >= rayT.max)
-                return false;
+                return null;
         }
 
-        rec.t = root;
-        rec.p = ray.at(root);
-        Vec3f outNormal = (rec.p - center) / radius;
-        rec.setFaceNormal(ray, outNormal);
+        Vec3f p = ray.at(root);
+        Vec3f outNormal = (p - center) / radius;
+        auto rec = new HitRecord(ray, p, outNormal, root);
 
-        return true;
+        return rec;
     }
 }

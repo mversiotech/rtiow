@@ -5,15 +5,17 @@ import interval;
 import ray;
 import vec3;
 
-struct HitRecord
+class HitRecord
 {
-    Point3f p;
-    Vec3f normal;
-    float t;
-    bool isFront;
+    const Point3f p;
+    const Vec3f normal;
+    const float t;
+    const bool isFront;
 
-    void setFaceNormal(const Ray ray, Vec3f outNormal)
+    this(const Ray ray, Point3f p, Vec3f outNormal, float t)
     {
+        this.p = p;
+        this.t = t;
         isFront = ray.direction.dot(outNormal) < 0;
         normal = isFront ? outNormal : -outNormal;
     }
@@ -21,7 +23,7 @@ struct HitRecord
 
 interface Hittable
 {
-    bool hit(const Ray ray, Interval rayT, out HitRecord rec) const;
+    HitRecord hit(const Ray ray, Interval rayT) const;
 }
 
 class HittableList : Hittable
@@ -38,22 +40,21 @@ class HittableList : Hittable
         objects.length = 0;
     }
 
-    bool hit(const Ray ray, Interval rayT, out HitRecord rec) const
+    HitRecord hit(const Ray ray, Interval rayT) const
     {
-        HitRecord tmpRec;
-        bool haveHit;
+        HitRecord rec;
         float closestT = rayT.max;
 
         foreach (obj; objects)
         {
-            if (obj.hit(ray, Interval(rayT.min, closestT), tmpRec))
+            HitRecord tmpRec = obj.hit(ray, Interval(rayT.min, closestT));
+            if (tmpRec !is null)
             {
-                haveHit = true;
                 closestT = tmpRec.t;
                 rec = tmpRec;
             }
         }
 
-        return haveHit;
+        return rec;
     }
 }
