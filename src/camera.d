@@ -1,5 +1,5 @@
 module camera;
-@safe nothrow:
+nothrow:
 
 import color;
 import hittable;
@@ -56,14 +56,17 @@ class Camera
 
     void render(ColorBuffer target, const Hittable scene) const
     {
+        import std.parallelism : parallel;
+        import std.range : iota;
+
         ImageGeometry igeom;
         setupImageGeometry(target, igeom);
 
         const float colorScale = 1.0f / samplesPerPixel;
 
-        for (int y = 0; y < target.h; y++)
+        foreach (y; parallel(iota(target.h))) // render multiple scan lines in parallel
         {
-            for (int x = 0; x < target.w; x++)
+            foreach (x; 0 .. target.w)
             {
                 auto pixelColor = Color(0, 0, 0);
 
