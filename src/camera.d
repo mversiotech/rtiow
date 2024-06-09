@@ -11,8 +11,8 @@ import vec3;
 // Some render parameters
 enum
 {
-    samplesPerPixel = 10,
-    maxRecursionDepth = 10
+    samplesPerPixel = 500,
+    maxRecursionDepth = 50
 }
 
 private struct ImageGeometry

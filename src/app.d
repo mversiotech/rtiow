@@ -8,8 +8,8 @@ import vec3;
 
 enum
 {
-    imageWidth = 400,
-    imageHeight = 225
+    imageWidth = 1280,
+    imageHeight = 720
 }
 
 void main()
