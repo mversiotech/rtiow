@@ -12,7 +12,7 @@ interface Material
     Ray scatter(const Ray rayIn, const HitRecord rec, out Color attenuation) const;
 }
 
-class Lambertian: Material
+class Lambertian : Material
 {
     const Color albedo;
 
@@ -33,7 +33,7 @@ class Lambertian: Material
     }
 }
 
-class Metal: Material
+class Metal : Material
 {
     const Color albedo;
     const float fuzz;
@@ -56,8 +56,60 @@ class Metal: Material
         return null;
     }
 
-    private static Vec3f reflect(Vec3f v, Vec3f n)
+}
+
+class Dielectric : Material
+{
+    const float refractionIndex;
+
+    this(float refractionIndex)
     {
-        return v - 2.0f * v.dot(n) * n;
+        this.refractionIndex = refractionIndex;
     }
+
+    Ray scatter(const Ray rayIn, const HitRecord rec, out Color attenuation) const
+    {
+        import std.math : fmin, sqrt;
+        import std.random: uniform01;
+
+        attenuation = Color(1.0f, 1.0f, 1.0f);
+        float ri = rec.isFront ? (1.0f / refractionIndex) : refractionIndex;
+
+        Vec3f unitDirection = rayIn.direction.unit();
+        float cosTheta = fmin(rec.normal.dot(-unitDirection), 1.0f);
+        float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
+
+        Vec3f direction;
+        if (ri * sinTheta > 1.0f || reflectance(cosTheta, ri) > uniform01())
+            direction = reflect(unitDirection, rec.normal);
+        else
+            direction = refract(unitDirection, rec.normal, ri);
+
+        return new Ray(rec.p, direction);
+    }
+}
+
+private Vec3f reflect(Vec3f v, Vec3f n)
+{
+    return v - 2.0f * v.dot(n) * n;
+}
+
+private Vec3f refract(Vec3f uv, Vec3f n, float etaiOverEtat)
+{
+    import std.math : fabs, fmin, sqrt;
+
+    float cosTheta = fmin(n.dot(-uv), 1.0f);
+    Vec3f rOutPerp = etaiOverEtat * (uv + cosTheta * n);
+    Vec3f rOutParallel = -sqrt(fabs(1.0 - rOutPerp.lengthSquared())) * n;
+
+    return rOutPerp + rOutParallel;
+}
+
+private float reflectance(float cosine, float refractionIndex)
+{
+    import std.math: pow;
+
+    float r0 = (1.0f - refractionIndex) / (1.0f + refractionIndex);
+    r0 = r0 * r0;
+    return r0 + (1.0f - r0) * pow((1.0f - cosine), 5);
 }
