@@ -107,7 +107,7 @@ class Camera
 
         if (scene.hit(ray, Interval(0.001f, float.infinity), rec))
         {
-            const direction = randomVec3fOnHemisphere(rec.normal);
+            const direction = rec.normal + randomUnitVec3f();
             return 0.5f * rayColor(new Ray(rec.p, direction), scene, depth + 1);
         }
 
