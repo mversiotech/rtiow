@@ -14,7 +14,7 @@ interface Material
 
 class Lambertian: Material
 {
-    private Color albedo;
+    const Color albedo;
 
     this(Color albedo)
     {
@@ -35,19 +35,25 @@ class Lambertian: Material
 
 class Metal: Material
 {
-    private Color albedo;
+    const Color albedo;
+    const float fuzz;
 
-    this(Color albedo)
+    this(Color albedo, float fuzz)
     {
         this.albedo = albedo;
+        this.fuzz = (fuzz < 1.0f) ? fuzz : 1.0f;
     }
 
     Ray scatter(const Ray rayIn, const HitRecord rec, out Color attenuation) const
     {
-        const reflected = reflect(rayIn.direction, rec.normal);
+        auto reflected = reflect(rayIn.direction, rec.normal).unit();
+        reflected += fuzz * randomUnitVec3f();
         auto scattered = new Ray(rec.p, reflected);
         attenuation = albedo;
-        return scattered;
+        if (scattered.direction.dot(rec.normal) > 0)
+            return scattered;
+
+        return null;
     }
 
     private static Vec3f reflect(Vec3f v, Vec3f n)

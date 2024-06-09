@@ -17,8 +17,8 @@ void main()
 
     const groundMaterial = new Lambertian(Color(0.8f, 0.8f, 0.0f));
     const centerMaterial = new Lambertian(Color(0.1f, 0.2f, 0.5f));
-    const leftMaterial = new Metal(Color(0.8f, 0.8f, 0.8f));
-    const rightMaterial = new Metal(Color(0.8f, 0.6f, 0.2f));
+    const leftMaterial = new Metal(Color(0.8f, 0.8f, 0.8f), 0.3f);
+    const rightMaterial = new Metal(Color(0.8f, 0.6f, 0.2f), 1.0f);
 
     scene.add(new Sphere(Point3f(0.0f, -100.5f, -1.0f), 100.0f, groundMaterial));
     scene.add(new Sphere(Point3f(0.0f, 0.0f, -1.2f), 0.5f, centerMaterial));
