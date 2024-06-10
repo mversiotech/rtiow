@@ -11,7 +11,7 @@ alias Vec3f = Vec3!float;
 /// Point3f is an alias for Vec3f used to indicate location vectors.
 alias Point3f = Vec3!float;
 
-/// Vec3 is a vector with two components of an arbitrary numerical type.
+/// Vec3 is a vector with three components of an arbitrary numerical type.
 struct Vec3(T) if (isNumeric!T)
 {
     T x;
